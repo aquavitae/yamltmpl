@@ -1,31 +1,13 @@
 module Main where
 
-import qualified Options.Applicative as O
-import Data.Semigroup ((<>))
-import Data.Yaml
-import qualified Data.Vector
-import qualified Data.HashMap.Lazy as HashMap
+import           Arguments
 import qualified Data.ByteString.Char8 as BS
-
-data OutputFormat = Json | Yaml deriving (Enum)
-
-data Arguments = Arguments
-  { file  :: String
-  , outputFormat  :: String }
-
-
-options :: O.Parser Arguments
-options = Arguments
-     <$> O.strOption
-        ( O.long "file"
-        <> O.short 'f'
-        <> O.metavar "FILE"
-        <> O.help "Input template file" )
-     <*> O.strOption
-        ( O.long "outputFormat"
-        <> O.short 't'
-        <> O.metavar "yaml|json"
-        <> O.help "Output format (default: yaml)" )
+import qualified Data.Hashable
+import qualified Data.HashMap.Strict   as HashMap
+import           Data.Semigroup        ((<>))
+import qualified Data.Text             as T
+import qualified Data.Vector
+import           Data.Yaml
 
 
 readYamlFile :: FromJSON a => FilePath -> IO a
@@ -36,30 +18,23 @@ readYamlFile p = do
         Just d' -> return d'
 
 
-parseValue :: Value -> Value
-parseValue value = 2
+parseValue :: T.Text -> T.Text
+parseValue value = T.pack "** THIS WILL BE PARSED **"
 
 
-applyContext :: FromJSON a => a -> a
-applyContext x =
-  case x of
-    Array _ -> map applyContext x
-    Object _ -> HashMap.map applyContext x
-    String _ -> parseValue x
-    _ -> x
+change :: Value -> Value
+change (Array x)  = Array . fmap change $ x
+change (Object x) = Object . fmap change $ x
+change (String x) = String . parseValue $ x
+change x          = x
 
-
-buildTemplate :: Arguments -> IO ()
-buildTemplate (Arguments file t) = do
-  yamlData <- readYamlFile file :: IO Object
-  context <- readYamlFile t :: IO Object
-  map applyContext yamlData
+yamlTemplate :: Arguments -> IO ()
+yamlTemplate (Arguments file t) = do
+  print file
+  yamlData <- readYamlFile file :: IO Value
+  -- context <- readYamlFile t :: IO Value
+  print $ change yamlData
 
 
 main :: IO ()
-main = execParser opts >>= buildTemplate
-  where
-    opts = info (helper <*> options)
-      ( fullDesc
-     <> progDesc "Print a greeting for TARGET"
-     <> header "hello - a test for optparse-applicative" )
+main = Arguments.mainWithArguments yamlTemplate

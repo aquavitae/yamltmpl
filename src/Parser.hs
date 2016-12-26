@@ -1,11 +1,11 @@
 module ParseWhile where
 
-import System.IO
-import Control.Monad
-import Text.ParserCombinators.Parsec
-import Text.ParserCombinators.Parsec.Expr
-import Text.ParserCombinators.Parsec.Language
-import qualified Text.ParserCombinators.Parsec.Token as Token
+import           Control.Monad
+import           System.IO
+import           Text.ParserCombinators.Parsec
+import           Text.ParserCombinators.Parsec.Expr
+import           Text.ParserCombinators.Parsec.Language
+import qualified Text.ParserCombinators.Parsec.Token    as Token
 
 data BExpr = BoolConst Bool
           | Not BExpr
@@ -37,24 +37,18 @@ data Stmt = Seq [Stmt]
            deriving (Show)
 
 languageDef =
- emptyDef { Token.commentStart    = "/*"
-          , Token.commentEnd      = "*/"
-          , Token.commentLine     = "//"
-          , Token.identStart      = letter
+ emptyDef { Token.identStart      = letter
           , Token.identLetter     = alphaNum
           , Token.reservedNames   = [ "if"
                                     , "then"
                                     , "else"
-                                    , "while"
-                                    , "do"
-                                    , "skip"
                                     , "true"
                                     , "false"
                                     , "not"
                                     , "and"
                                     , "or"
                                     ]
-          , Token.reservedOpNames = ["+", "-", "*", "/", ":="
+          , Token.reservedOpNames = ["+", "-", "*", "/", "="
                                     , "<", ">", "and", "or", "not"
                                     ]
           }
@@ -79,10 +73,10 @@ statement :: Parser Stmt
 statement =   parens statement
          <|> sequenceOfStmt
 
-sequenceOfStmt =
- do list <- (sepBy1 statement' semi)
-    -- If there's only one statement return it without using Seq.
-    return $ if length list == 1 then head list else Seq list
+sequenceOfStmt = do
+  list <- sepBy1 statement' semi
+  -- If there's only one statement return it without using Seq.
+  return $ if length list == 1 then head list else Seq list
 
 statement' :: Parser Stmt
 statement' =   ifStmt
