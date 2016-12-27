@@ -1,4 +1,6 @@
-module Arguments where
+module Arguments (
+  main
+) where
 
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.HashMap.Strict   as HashMap
@@ -27,8 +29,8 @@ options = Arguments
         <> help "Output format (default: yaml)" )
 
 
-mainWithArguments :: (Arguments -> IO ()) -> IO ()
-mainWithArguments processor = execParser opts >>= processor
+main :: (Arguments -> IO ()) -> IO ()
+main processor = execParser opts >>= processor
   where
     opts = info (helper <*> options)
       ( fullDesc

@@ -1,6 +1,6 @@
 module Main where
 
-import           Arguments
+import qualified Arguments (main)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.Hashable
 import qualified Data.HashMap.Strict   as HashMap
@@ -37,4 +37,4 @@ yamlTemplate (Arguments file t) = do
 
 
 main :: IO ()
-main = Arguments.mainWithArguments yamlTemplate
+main = Arguments.main yamlTemplate
