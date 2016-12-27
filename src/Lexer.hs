@@ -7,6 +7,11 @@ import           Text.ParserCombinators.Parsec.Expr
 import           Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token    as Token
 
+-- expression: [ scopeWord ] textExpr [ "|" filterExpr ]
+-- scopeWord:  "lookup"
+-- textExpr: textLiteral | varExpression ( textOp textExpr )
+
+
 data BExpr = BoolConst Bool
           | Not BExpr
           | BBinary BBinOp BExpr BExpr
@@ -29,12 +34,9 @@ data ABinOp = Add
            | Divide
              deriving (Show)
 
-data Stmt = Seq [Stmt]
-         | Assign String AExpr
-         | If BExpr Stmt Stmt
-         | While BExpr Stmt
-         | Skip
-           deriving (Show)
+data Expression =
+blockStart      = "(("
+blockEnd        = "))"
 
 languageDef =
  emptyDef { Token.identStart      = letter
@@ -66,8 +68,8 @@ integer    = Token.integer    lexer -- parses an integer
 semi       = Token.semi       lexer -- parses a semicolon
 whiteSpace = Token.whiteSpace lexer -- parses whitespace
 
-whileParser :: Parser Stmt
-whileParser = whiteSpace >> statement
+parser :: Parser Expression
+parser = whiteSpace >> statement
 
 statement :: Parser Stmt
 statement =   parens statement
@@ -80,8 +82,6 @@ sequenceOfStmt = do
 
 statement' :: Parser Stmt
 statement' =   ifStmt
-          <|> whileStmt
-          <|> skipStmt
           <|> assignStmt
 
 ifStmt :: Parser Stmt
@@ -94,23 +94,12 @@ ifStmt =
     stmt2 <- statement
     return $ If cond stmt1 stmt2
 
-whileStmt :: Parser Stmt
-whileStmt =
-  do reserved "while"
-     cond <- bExpression
-     reserved "do"
-     stmt <- statement
-     return $ While cond stmt
-
 assignStmt :: Parser Stmt
 assignStmt =
   do var  <- identifier
-     reservedOp ":="
+     reservedOp "="
      expr <- aExpression
      return $ Assign var expr
-
-skipStmt :: Parser Stmt
-skipStmt = reserved "skip" >> return Skip
 
 aExpression :: Parser AExpr
 aExpression = buildExpressionParser aOperators aTerm

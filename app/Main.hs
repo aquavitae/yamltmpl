@@ -1,6 +1,6 @@
 module Main where
 
-import qualified Arguments (main)
+import qualified Optparse
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.Hashable
 import qualified Data.HashMap.Strict   as HashMap
@@ -28,8 +28,8 @@ change (Object x) = Object . fmap change $ x
 change (String x) = String . parseValue $ x
 change x          = x
 
-yamlTemplate :: Arguments -> IO ()
-yamlTemplate (Arguments file t) = do
+yamlTemplate :: Optparse.Arguments -> IO ()
+yamlTemplate (Optparse.Arguments file t) = do
   print file
   yamlData <- readYamlFile file :: IO Value
   -- context <- readYamlFile t :: IO Value
@@ -37,4 +37,4 @@ yamlTemplate (Arguments file t) = do
 
 
 main :: IO ()
-main = Arguments.main yamlTemplate
+main = Optparse.main yamlTemplate

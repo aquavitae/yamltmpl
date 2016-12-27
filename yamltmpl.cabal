@@ -16,14 +16,16 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
-                     , Arguments
+                     , Optparse
+                     , Lexer
   build-depends:       base >= 4.7 && < 5
                      , bytestring
-                     , yaml
-                     , text
-                     , vector
-                     , unordered-containers
+                     , parsec
                      , optparse-applicative
+                     , text
+                     , unordered-containers
+                     , vector
+                     , yaml
   default-language:    Haskell2010
 
 executable yamltmpl-exe
@@ -33,11 +35,11 @@ executable yamltmpl-exe
   build-depends:       base
                      , bytestring
                      , hashable
-                     , yaml
-                     , text
-                     , vector
-                     , unordered-containers
                      , optparse-applicative
+                     , text
+                     , unordered-containers
+                     , vector
+                     , yaml
                      , yamltmpl
   default-language:    Haskell2010
 

@@ -1,4 +1,5 @@
-module Arguments (
+module Optparse (
+  Arguments(..),
   main
 ) where
 
